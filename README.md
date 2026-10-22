@@ -32,15 +32,17 @@ How it works is in [architecture](docs/architecture.md), the choices behind it i
 
 ## Quick start
 
-The package isn't on GitHub yet; a program imports it from a checkout. Its root file
-declares goose-tls and goose-hash, and goose-http for `acme.socket`:
+A program declares the package in its root file at a tag, with goose-tls and
+goose-hash, which it needs, and goose-http for `acme.socket`. It builds with OpenSSL's
+headers and libraries installed, as goose-tls asks
+([development](docs/development.md#toolchain)):
 
 ```goose
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.4";
 import http from "github.com/kaitk/goose-http@v0.5.0";
-import acme from "../goose-acme/";
+import acme from "github.com/kaitk/goose-acme@v0.0.1";
 import acme.socket;
 
 // What the program's TLS server answers acme-tls/1 with: tls::choose_context
@@ -65,6 +67,15 @@ fn main() {
     for e in failed { print("ACME: ", e.message); }
 }
 ```
+
+```sh
+goose build server.goose
+```
+
+The tag `v0.0.1` has everything marked 🟢 in the table above. Until goose-http's
+`connect` resolves names, `acme.socket` reaches a directory at `localhost` or an IP
+address, such as Pebble's, and not yet Let's Encrypt's (task 001).
+`test/live/pebble.goose` is a whole program against Pebble.
 
 ## API
 

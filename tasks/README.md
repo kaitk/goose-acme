@@ -47,5 +47,5 @@ for the latest measurements.
 
 Task 001 puts the package in front of the internet: a goose-http server that answers
 TLS-ALPN-01 and swaps its certificate while it runs, which goose-rest's task 049 tests,
-and Let's Encrypt's directory reached by name. Both wait on goose-http. Task 002 puts
-the repository on GitHub with its first tag, when asked.
+and Let's Encrypt's directory reached by name. Both wait on goose-http. Task 002, done,
+put the repository on GitHub at `v0.0.1`.
