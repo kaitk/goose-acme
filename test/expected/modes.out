@@ -1,0 +1,11 @@
+account: d/cached_account_IB1t1W6MWRcFv572Lp-Lw38YIZ1PWHyC-53thCXcLXk
+cert: d/cached_cert_BzbBWZl7k2hFR2PikTqCTN392jwwvHlLyatFgR0cBmo
+no contacts: d/cached_account_XnbTFRfs1mQOU8kW7TeI64kk-OHAL_EoQ84DHXSb9D4
+a new directory: 0700
+a stored file: 0600
+read back: ok
+errors: 0
+an older directory: 0700
+an older cached file: 0600
+a file the cache didn't write, unchanged: ok
+errors: 0

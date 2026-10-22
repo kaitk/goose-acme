@@ -1,0 +1,8 @@
+// The package's C, until Goose's os module can set a file's mode
+// (docs/decisions.md): chmod for the cache's directory and files.
+c_sources = ["shim/mode.c"];
+// The shim's _Static_assert is C11, which MSVC takes only when asked.
+c_flags_msvc = ["/std:c11"];
+// build/ holds the compiler scripts/goose.sh fetches, whose stdlib declares the
+// runtime's extern fns.
+exclude = ["build"];

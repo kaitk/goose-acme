@@ -1,0 +1,72 @@
+first:
+nothing cached: 0
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  serve example.test (a 7-day certificate and its key)
+  POST /chal/example.test
+  POST /authz/example.test
+  wait 1
+  POST /authz/example.test
+  stop example.test
+  POST /authz/www.example.test
+  serve www.example.test (a 7-day certificate and its key)
+  POST /chal/www.example.test
+  POST /authz/www.example.test
+  wait 1
+  POST /authz/www.example.test
+  stop www.example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a certificate: ok
+renewed two thirds in: ok
+the key first: ok
+then the chain: ok
+accounts: 1
+challenges served and ended: 22
+again, from the cache:
+the same certificate: ok
+when due:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  serve example.test (a 7-day certificate and its key)
+  POST /chal/example.test
+  POST /authz/example.test
+  wait 1
+  POST /authz/example.test
+  stop example.test
+  POST /authz/www.example.test
+  serve www.example.test (a 7-day certificate and its key)
+  POST /chal/www.example.test
+  POST /authz/www.example.test
+  wait 1
+  POST /authz/www.example.test
+  stop www.example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a new certificate: ok
+accounts, the cached key's found: 1
+cached: ok
+errors: 0
+no cache:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a certificate, its authorization valid already: ok
+nothing cached: 0
+errors: 0

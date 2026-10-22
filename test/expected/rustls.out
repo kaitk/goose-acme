@@ -1,0 +1,17 @@
+rustls-acme's certificate, from the cache: ok
+a server context from it, the key matching: ok
+when due:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a new certificate: ok
+errors: 0
+errors: 0
+the account signed with ring's key: ok
+accounts: 1

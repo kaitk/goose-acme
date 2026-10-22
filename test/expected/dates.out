@@ -1,0 +1,15 @@
+UTCTime 2000-02-29T12:00:00Z to 2049-12-31T23:59:59Z read: ok
+UTCTime 2000-02-29T12:00:00Z to 2049-12-31T23:59:59Z not before: 951825600
+UTCTime 2000-02-29T12:00:00Z to 2049-12-31T23:59:59Z not after: 2524607999
+GeneralizedTime 2050-01-01T00:00:00Z to 2107-12-06T19:42:10Z read: ok
+GeneralizedTime 2050-01-01T00:00:00Z to 2107-12-06T19:42:10Z not before: 2524608000
+GeneralizedTime 2050-01-01T00:00:00Z to 2107-12-06T19:42:10Z not after: 4352643730
+1970-01-01: 0
+1600-03-01: -135080
+no certificate: ok
+a cut certificate: ok
+the block found, to its end: ok
+and written back the same: ok
+key_of: ok
+chain_of: ok
+no key: ok

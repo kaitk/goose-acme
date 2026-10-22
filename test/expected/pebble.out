@@ -1,0 +1,11 @@
+errors: 0
+a certificate: ok
+lasting Pebble's 30 seconds: ok
+with its issuer: ok
+a server context from it, the key matching: ok
+no challenge files left: ok
+the same, from the cache: ok
+errors: 0
+renewed when due: ok
+errors: 0
+cached files, one account and one certificate: 2

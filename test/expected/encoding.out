@@ -1,0 +1,17 @@
+base64url "": 
+base64url "66": Zg
+base64url "666f": Zm8
+base64url "666f6f": Zm9v
+base64url "666f6f62": Zm9vYg
+base64url "666f6f6261": Zm9vYmE
+base64url "666f6f626172": Zm9vYmFy
+base64url "fbff": -_8
+base64url "fbefbe": ----
+jwk: {"crv":"P-256","kty":"EC","x":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8","y":"ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8"}
+thumbprint: 0r62zgBj277RicA3LnaBKQ5_9RCDIomrlbpWjO0QTG0
+key authorization digest: b1803056ba83b553ae259bc01eead20183e812de5f155fc2e1b75238e5bea396
+key errors: 0
+with the key: {"alg":"ES256","jwk":{"crv":"P-256","kty":"EC","x":"AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8","y":"ICEiIyQlJicoKSorLC0uLzAxMjM0NTY3ODk6Ozw9Pj8"},"nonce":"n1","url":"https://ca.test/account"}
+with the account: {"alg":"ES256","kid":"https://ca.test/acct/1","nonce":"n\"2","url":"https://ca.test/order"}
+a POST-as-GET's empty payload: ok
+errors: 0

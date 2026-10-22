@@ -1,0 +1,65 @@
+two nonces refused, then taken:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /account
+  POST /account
+  POST /order
+  POST /authz/example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a certificate: ok
+challenges still served: 0
+three nonces refused:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /account
+  POST /account
+error: newAccount: HTTP 400: urn:ietf:params:acme:error:badNonce refused for the test
+challenges still served: 0
+a challenge found invalid:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  serve example.test (a 7-day certificate and its key)
+  POST /chal/example.test
+  POST /authz/example.test
+  wait 1
+  POST /authz/example.test
+  stop example.test
+error: the challenge for example.test is invalid: urn:ietf:params:acme:error:incorrectResponse the test's answer
+challenges still served: 0
+an order refused:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+error: newOrder: HTTP 403: urn:ietf:params:acme:error:rejectedIdentifier the test refuses it
+challenges still served: 0
+no CA there:
+error: fake: no such host in https://elsewhere.test/dir
+challenges still served: 0
+no domains:
+error: no domains to get a certificate for
+challenges still served: 0
+a cached file that can't be read: 0
+errors: 0
+ordered in its place:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a certificate: ok
+challenges still served: 0
+and cached: ok
+errors: 0
