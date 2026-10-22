@@ -14,7 +14,7 @@ read the file a task touches before starting it.
 - Task tracking: `tasks/` (see `tasks/README.md`)
 - The protocols: RFC 8555 (ACME), RFC 8737 (TLS-ALPN-01), RFC 7515 and RFC 7638 (JWS
   and the JWK thumbprint). The cache follows rustls-acme 0.15's `DirCache`.
-- Its first user: goose-rest, whose task 049 asked for it, through goose-http.
+- Its first user: Plod, whose task 049 asked for it, through goose-http.
 - The language: the pinned Goose release's `docs/tutorial.md`, `docs/goose_spec.md`,
   `docs/stdlib.md`, and `docs/packages.md` (how a package declares the packages it
   needs). Read the tutorial before writing Goose; check the spec before assuming a

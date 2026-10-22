@@ -1,6 +1,6 @@
 // The module acme.socket: an io for acme::certificate over goose-http's
 // http.client, which makes each request on its blocking socket with goose-tls's
-// client TLS, for a thread that runs no event loop, such as a goose-rest lane.
+// client TLS, for a thread that runs no event loop, such as a Plod lane.
 // Only a program that imports this module needs goose-http, which its root
 // file declares at the reference this file names:
 //
