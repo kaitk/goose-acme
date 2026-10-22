@@ -49,7 +49,9 @@ fn free(t: Socket&) {
     t.ctx = tls::Context { .. };
 }
 
-fn exchange(t: Socket&, method: const u8[:], url: const u8[:], body: const u8[:], r: Response&) {
+// method is untyped so that exchange, which can fail, is compiled only where
+// the flow calls it inside acme::run (docs/goose-findings.md).
+fn exchange(t: Socket&, method, url: const u8[:], body: const u8[:], r: Response&) {
     https(t, t.ctx, method, url, body, r);
 }
 

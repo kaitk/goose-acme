@@ -64,6 +64,8 @@ The areas:
   nonces, an invalid challenge, a refused order, an unreachable CA, and a cached file
   that can't be read (`failures`); and a cache rustls-acme wrote, its account key made
   by ring (`rustls`, below).
+- `test/socket/`: a program that imports `acme.socket` and calls nothing that can fail,
+  which must build ([findings](goose-findings.md)).
 - `test/compile/`: `// error:` fixtures, programs that must not compile:
   `acme::certificate` outside `acme::run`.
 

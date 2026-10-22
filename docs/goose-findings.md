@@ -11,10 +11,15 @@ entry is deleted once the pin has its fix (`agents/goose.md`).
   path** (v2026.3, `8511ae3`; first recorded in goose-tls's findings). `goose check` of
   a file without `main`, or of a program that imports one, takes every fully typed
   function as a root, and rejects one whose call path reaches `return ... from run`
-  with "no enclosing call of run on this compile-time call path". Work-around: each
-  function that can call `acme::fail` has a generic parameter, so it is compiled only
-  where it's called; `scripts/test.sh` doesn't check `test/fake.goose` alone, whose
-  overloads are typed.
+  with "no enclosing call of run on this compile-time call path". `goose build` of a
+  program that never calls such a function rejects it too, with "call to fail requires
+  an enclosing call of run", though `goose check` of the same program passes. v0.0.1's
+  typed `exchange` in `acme.socket` broke every program that imported the module
+  without calling `acme::certificate`. Work-around: each function that can call
+  `acme::fail` has a generic parameter, so it is compiled only where it's called, and
+  `test/socket/imports.goose` builds a program that calls none of them;
+  `scripts/test.sh` doesn't check `test/fake.goose` alone, whose overloads are typed. A
+  program's own typed `exchange` that calls `acme::fail` needs the same.
 
 ## Feature requests
 

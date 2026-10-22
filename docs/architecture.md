@@ -40,7 +40,10 @@ from `acme.socket`:
 | `acme::challenge_start(challenges, name, certificate_pem, key_pem)` | Answer a TLS handshake for `name` that offers ALPN `acme-tls/1` with this certificate, until `challenge_end` |
 | `acme::challenge_end(challenges, name)` | Stop answering for `name` |
 
-Both values are passed by reference, so overloads can keep state in them.
+Both values are passed by reference, so overloads can keep state in them. An overload
+that calls `acme::fail` needs a parameter without a type, as `acme.socket`'s
+`exchange` has, or a program that never calls `acme::certificate` doesn't build
+([findings](goose-findings.md)).
 
 A server on goose-tls answers the challenge with `tls::choose_context`: at the
 `HELLO` pause, a connection that offers `acme-tls/1` for a name being challenged moves
