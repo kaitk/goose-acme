@@ -7,7 +7,7 @@ import std;
 import os;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.5";
-import http from "github.com/kaitk/goose-http@5a780febed8e129d5bbf4c5278df117905e456ed";
+import http from "github.com/kaitk/goose-http@v0.5.4";
 import acme from "../../";
 import acme.socket;
 import check from "../";

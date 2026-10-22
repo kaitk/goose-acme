@@ -27,7 +27,7 @@ How it works is in [architecture](docs/architecture.md), the choices behind it i
 | 🟢 | The cache | rustls-acme's file names and formats, read both ways; directory 0700 and files 0600; each file written whole or not at all. |
 | 🟢 | Over goose-http's HTTP client | `acme.socket`, for a lane. |
 | 🟡 | Let's Encrypt | Its staging service reached through `acme.socket`: directory, nonce, account, and an order it refused by policy (2026-10-22). A whole certificate needs a public server answering challenges (task 001). |
-| 🔴 | A goose-http server answering challenges | goose-http's `http.tls` doesn't choose a context per connection yet (task 001). |
+| 🟡 | A goose-http server answering challenges | goose-http `v0.5.3` chooses a context per connection: `http::tls_server(ctx, chooser)` calls the program's `http::tls_hello(chooser, conn)` at each ClientHello. What remains is the program's glue, a chooser per worker fed by mail from the ACME lane (task 001). |
 | 🔴 | HTTP-01, DNS-01, wildcards | Out of scope ([decisions](docs/decisions.md#scope)). |
 
 ## Quick start
@@ -41,8 +41,8 @@ headers and libraries installed, as goose-tls asks
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.5";
-import http from "github.com/kaitk/goose-http@v0.5.2";
-import acme from "github.com/kaitk/goose-acme@v0.0.3";
+import http from "github.com/kaitk/goose-http@v0.5.4";
+import acme from "github.com/kaitk/goose-acme@v0.0.4";
 import acme.socket;
 
 // What the program's TLS server answers acme-tls/1 with: tls::choose_context
@@ -114,7 +114,7 @@ tasks/          task tracking (tasks/README.md)
 | Goose compiler | `aardappel/goose` release `v2026.3` (`8511ae3`), which the scripts fetch ([setup](docs/development.md#set-up-the-goose-compiler)) | An official release builds the same on every platform |
 | goose-tls | `github.com/kaitk/goose-tls@v0.0.5` | P-256 keys, ES256, the CSR, the challenge certificate, and client TLS |
 | goose-hash | `github.com/kaitk/goose-hash@v0.0.4` | SHA-256 |
-| goose-http | `github.com/kaitk/goose-http@5a780febed8e129d5bbf4c5278df117905e456ed`, in `socket.goose` and the programs that import it | Its HTTP client, `http.client`, for `acme.socket`, which no release has yet |
+| goose-http | `github.com/kaitk/goose-http@v0.5.4`, in `socket.goose` and the programs that import it | Its HTTP client, `http.client`, for `acme.socket` |
 | Pebble | `v2.8.0`, in `scripts/pebble.sh` | The live test's CA |
 
 ## Credits
