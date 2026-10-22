@@ -20,7 +20,7 @@ namespace acme;
 
 import std;
 import json;
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 
 // How many times a status is polled, and how long to wait between polls when
 // the CA's Retry-After doesn't say, and at most when it does.

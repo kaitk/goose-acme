@@ -5,7 +5,7 @@
 // names:
 //
 //   import acme from "github.com/kaitk/goose-acme@<tag>";
-//   import http from "github.com/kaitk/goose-http@v0.5.0";
+//   import http from "github.com/kaitk/goose-http@v0.5.2";
 //   import acme.socket;
 //
 //   let failed = acme::run() {
@@ -14,13 +14,14 @@
 //       acme::free(io);
 //   };
 //
-// goose-http's connect takes localhost or an IP address, not yet a name.
+// goose-http's connect resolves a name with the system's resolver, which the
+// time limit doesn't bound.
 namespace acme;
 
 import std;
 import os;
-import http from "github.com/kaitk/goose-http@v0.5.0";
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import http from "github.com/kaitk/goose-http@v0.5.2";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 
 // The client context every request's TLS starts from, the open connection,
 // and the limit in milliseconds on each wait (-1: none).
@@ -66,7 +67,8 @@ fn open(t: Socket&, host: const u8[:], port: i64, why: u8[>..]&) -> bool {
         format(why, e.call, " ");
         if e.code == http::ECONNREFUSED { why.append("ECONNREFUSED"); }
         else if e.code == http::ETIMEDOUT { why.append("ETIMEDOUT"); }
-        else if e.code == http::ENOSYS { why.append("ENOSYS (the host must be localhost or an IP address)"); }
+        else if e.code == http::ENOENT { why.append("ENOENT (no such name)"); }
+        else if e.code == http::EAGAIN { why.append("EAGAIN (the name's lookup failed for now)"); }
         else { format(why, "error ", e.code); }
         return false;
     }

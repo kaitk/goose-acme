@@ -1,7 +1,7 @@
 // acme::certificate, which can fail, outside acme::run doesn't compile.
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 import acme from "../../";
 import fake from "../";
 

@@ -10,7 +10,7 @@ import std;
 import base64;
 import json;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 import acme from "../";
 
 let BASE = "https://ca.test";

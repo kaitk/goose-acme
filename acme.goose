@@ -15,7 +15,7 @@ namespace acme;
 
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 import .jws;
 import .https;
 import .der;

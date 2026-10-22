@@ -26,7 +26,7 @@ How it works is in [architecture](docs/architecture.md), the choices behind it i
 | 🟢 | Renewal | Two thirds into the certificate's validity, with the cached account. |
 | 🟢 | The cache | rustls-acme's file names and formats, read both ways; directory 0700 and files 0600; each file written whole or not at all. |
 | 🟢 | Over goose-http's blocking socket | `acme.socket`, for a lane. |
-| 🟡 | Let's Encrypt | Its directory is named by a host name, which goose-http's `connect` doesn't resolve yet (task 001). |
+| 🟡 | Let's Encrypt | Its staging service reached through `acme.socket`: directory, nonce, account, and an order it refused by policy (2026-10-22). A whole certificate needs a public server answering challenges (task 001). |
 | 🔴 | A goose-http server answering challenges | goose-http's `http.tls` doesn't choose a context per connection yet (task 001). |
 | 🔴 | HTTP-01, DNS-01, wildcards | Out of scope ([decisions](docs/decisions.md#scope)). |
 
@@ -40,9 +40,9 @@ headers and libraries installed, as goose-tls asks
 ```goose
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
-import http from "github.com/kaitk/goose-http@v0.5.0";
-import acme from "github.com/kaitk/goose-acme@v0.0.2";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
+import http from "github.com/kaitk/goose-http@v0.5.2";
+import acme from "github.com/kaitk/goose-acme@v0.0.3";
 import acme.socket;
 
 // What the program's TLS server answers acme-tls/1 with: tls::choose_context
@@ -72,10 +72,8 @@ fn main() {
 goose build server.goose
 ```
 
-The tag `v0.0.2` has everything marked 🟢 in the table above. Until goose-http's
-`connect` resolves names, `acme.socket` reaches a directory at `localhost` or an IP
-address, such as Pebble's, and not yet Let's Encrypt's (task 001).
-`test/live/pebble.goose` is a whole program against Pebble.
+The tag `v0.0.3` has everything marked 🟢 in the table above, and reaches Let's
+Encrypt's directory by name. `test/live/pebble.goose` is a whole program against Pebble.
 
 ## API
 
@@ -116,9 +114,9 @@ tasks/          task tracking (tasks/README.md)
 | What | Pin | Why |
 |---|---|---|
 | Goose compiler | `aardappel/goose` release `v2026.3` (`8511ae3`), which the scripts fetch ([setup](docs/development.md#set-up-the-goose-compiler)) | An official release builds the same on every platform |
-| goose-tls | `github.com/kaitk/goose-tls@v0.0.4` | P-256 keys, ES256, the CSR, the challenge certificate, and client TLS |
+| goose-tls | `github.com/kaitk/goose-tls@v0.0.5` | P-256 keys, ES256, the CSR, the challenge certificate, and client TLS |
 | goose-hash | `github.com/kaitk/goose-hash@v0.0.4` | SHA-256 |
-| goose-http | `github.com/kaitk/goose-http@v0.5.0`, in `socket.goose` and the programs that import it | Its blocking socket, for `acme.socket` |
+| goose-http | `github.com/kaitk/goose-http@v0.5.2`, in `socket.goose` and the programs that import it | Its blocking socket, for `acme.socket` |
 | Pebble | `v2.8.0`, in `scripts/pebble.sh` | The live test's CA |
 
 ## Credits

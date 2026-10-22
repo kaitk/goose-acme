@@ -4,7 +4,7 @@
 // PEM in and out; and a cached certificate file split into key and chain.
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 import acme from "../../";
 import check from "../";
 

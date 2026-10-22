@@ -6,7 +6,7 @@
 namespace acme;
 
 import std;
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 
 // The largest response accepted: a certificate chain is a few kilobytes.
 let MAX_RESPONSE = 1 << 20;

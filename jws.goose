@@ -7,7 +7,7 @@ import std;
 import base64;
 import json;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.5";
 
 // Appends data in base64url without padding (RFC 7515, section 2).
 fn base64url(out: u8[>..]&, data: const u8[:]) {

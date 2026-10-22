@@ -69,8 +69,8 @@ The module `acme.socket` defines all of `io`'s calls on `acme::Socket`, over
 goose-http's blocking socket, each wait limited to the milliseconds given:
 `acme::socket(ms)` trusts OpenSSL's store of certificate authorities, and
 `acme::socket(ca, ms)` only `ca`'s certificates, for a test CA. goose-http's `connect`
-takes `localhost` or an IP address, so a directory named by a host name, such as Let's
-Encrypt's, can't be reached through it yet.
+resolves a directory's host name, such as Let's Encrypt's, with the system's resolver;
+the time limit doesn't bound the lookup.
 
 ## The cache
 
