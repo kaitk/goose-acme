@@ -5,8 +5,8 @@
 //
 //   acme::exchange(io, method, url, body, r: acme::Response&)
 //       one HTTPS request: GET, HEAD, or a POST of body as JOSE; the response
-//       into r, or acme::fail when there is none (https.goose has https,
-//       which carries one over a transport)
+//       into r, or acme::fail when there is none (acme.socket carries one
+//       over goose-http's http.client)
 //   acme::wait(io, seconds)        before polling a status again
 //   acme::now(io) -> i64           seconds since the epoch
 //   acme::challenge_start(challenges, name, certificate_pem, key_pem)

@@ -26,12 +26,24 @@ one records the new decision here, saying which it replaces, and updates
   nothing gains from interleaving its dozen requests with other work on a loop, and the
   state machine would carry every URL and nonce of the flow in fixed-size fields between
   steps. Trade-off: a program on an event loop runs the flow on another thread.
-- **HTTPS in the package, over a byte transport (2026-10-22).** `acme::https` writes
-  the HTTP/1.1 request, runs goose-tls's client connection, and reads the response, over
-  four overloads that open, send, receive, and close a connection. A transport then needs
-  no HTTP or TLS of its own; `acme.socket` is twenty lines over goose-http's blocking
-  socket. Each request opens a connection and sends `Connection: close`. Rejected:
-  keep-alive, which saves a handshake per request on a flow that runs every two months.
+- **HTTPS in the package, over a byte transport (2026-10-22).** Replaced by the next
+  decision. `acme::https` writes the HTTP/1.1 request, runs goose-tls's client
+  connection, and reads the response, over four overloads that open, send, receive, and
+  close a connection. A transport then needs no HTTP or TLS of its own; `acme.socket` is
+  twenty lines over goose-http's blocking socket. Each request opens a connection and
+  sends `Connection: close`. Rejected: keep-alive, which saves a handshake per request
+  on a flow that runs every two months.
+- **HTTPS is goose-http's `http.client` (2026-10-22).** This replaces HTTPS in the
+  package. `acme.socket`'s `exchange` makes each request with goose-http's client,
+  which writes it, runs goose-tls's client TLS, and reads the response, so goose-acme
+  has no HTTP of its own, and its `acme::https`, the four transport overloads, and
+  `https.goose` are gone. The client came from the same code, which goose-rest needed
+  as well; one copy in goose-http now serves both. The core still does no network
+  I/O: another server's program carries `exchange` with its own client. The session
+  keeps its connection between requests, which the client does for every program;
+  a flow that runs every two months gains little from it, and loses nothing. Rejected:
+  keeping `acme::https` for a transport that isn't goose-http's, which no program
+  uses.
 - **Errors through `acme::run` and `acme::fail` (2026-10-22),** as goose-tls's and
   goose-sqlite's calls leave their `run`. The flow is a dozen requests deep, and each can
   fail. A function that calls `fail` has a generic parameter, so it is compiled only

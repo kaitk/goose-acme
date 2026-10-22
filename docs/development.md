@@ -54,8 +54,6 @@ The areas:
 
 - `test/jws/`: base64url, the JWK and its thumbprint, a key authorization's digest, and
   a signed request's protected header with a JWK and with an account URL.
-- `test/https/`: `https` URLs, the requests written, and responses read whole and a
-  byte at a time, by length, in chunks, to the close, and malformed or cut.
 - `test/der/`: certificate dates in UTCTime and GeneralizedTime, from certificates
   made with `openssl req -x509` (`test/data/utc.pem` and `generalized.pem`), and PEM.
 - `test/cache/`: the cache's file names against rustls-acme's, and its modes.

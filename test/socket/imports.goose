@@ -4,11 +4,11 @@
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.5";
-import http from "github.com/kaitk/goose-http@v0.5.2";
+import http from "github.com/kaitk/goose-http@5a780febed8e129d5bbf4c5278df117905e456ed";
 import acme from "../../";
 import acme.socket;
 
 fn main() {
-    let u, ok = acme::parse_url(acme::LETS_ENCRYPT);
+    let u, ok = http::parse_url(acme::LETS_ENCRYPT);
     print(u.host, " ", ok);
 }

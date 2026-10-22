@@ -50,27 +50,25 @@ A server on goose-tls answers the challenge with `tls::choose_context`: at the
 to a context made from the challenge's certificate and key (goose-tls's
 [architecture](https://github.com/kaitk/goose-tls/blob/main/docs/architecture.md#a-context-per-connection)).
 
-## HTTPS over a transport
+## HTTPS through acme.socket
 
-`acme::https(t, ctx, method, url, body, r)` is an `exchange` for any transport: it
-parses the `https` URL, opens a connection, runs goose-tls's client handshake with
-`ctx`, sends the HTTP/1.1 request with `Connection: close`, and reads the response,
-which may have a `Content-Length`, chunks, or end at the TLS close. A response cut by a
-close without `close_notify` fails. The transport `t` supplies:
-
-| Call | Does |
-|---|---|
-| `acme::open(t, host, port, why: u8[>..]&) -> bool` | Connects, or appends why not |
-| `acme::send(t, bytes) -> bool` | Sends all of `bytes` |
-| `acme::receive(t, buf) -> i64` | Bytes into `buf`; 0 at the end, below 0 on failure |
-| `acme::hangup(t)` | Closes the connection |
-
-The module `acme.socket` defines all of `io`'s calls on `acme::Socket`, over
-goose-http's blocking socket, each wait limited to the milliseconds given:
-`acme::socket(ms)` trusts OpenSSL's store of certificate authorities, and
-`acme::socket(ca, ms)` only `ca`'s certificates, for a test CA. goose-http's `connect`
+The module `acme.socket` defines all of `io`'s calls on `acme::Socket`, which holds a
+session of goose-http's `http.client`
+([its API](https://github.com/kaitk/goose-http/blob/main/docs/api.md#an-http-client)),
+each wait limited to the milliseconds given: `acme::socket(ms)` trusts OpenSSL's store
+of certificate authorities, and `acme::socket(ca, ms)` only `ca`'s certificates, for a
+test CA. Its `exchange` sends a GET, a HEAD, or a POST of the body as
+`application/jose+json`, and fills the `acme::Response` with the status, `Location`,
+`Replay-Nonce`, `Retry-After` in seconds, and the body, up to 1 MB. The session keeps
+its connection to the CA between requests. A response to a HEAD has no body, and one
+cut by a close without TLS's `close_notify` fails, as the client reads them. A failed
+request leaves `run` with the step and the reason in words, such as
+`connect ECONNREFUSED` or `resolve ENOENT (no such name)`. goose-http's `connect`
 resolves a directory's host name, such as Let's Encrypt's, with the system's resolver;
 the time limit doesn't bound the lookup.
+
+A program whose server isn't goose-http defines `exchange`, `wait`, and `now` on a
+value of its own, over its own HTTPS client.
 
 ## The cache
 

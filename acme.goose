@@ -8,16 +8,14 @@
 //       // serve acme::key_of(pem) and acme::chain_of(pem) until renew_at
 //   };
 //
-// The flow is in order.goose, JWS in jws.goose, HTTP/1.1 and HTTPS in
-// https.goose, PEM and certificate dates in der.goose, and the cache, which
-// keeps rustls-acme's layout, in cache.goose.
+// The flow is in order.goose, JWS in jws.goose, PEM and certificate dates in
+// der.goose, and the cache, which keeps rustls-acme's layout, in cache.goose.
 namespace acme;
 
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.5";
 import .jws;
-import .https;
 import .der;
 import .cache;
 import .order;
@@ -63,4 +61,12 @@ struct Response {
     // Retry-After in seconds; 0 when absent.
     retry_after: i64 = 0,
     body: u8[>..],
+}
+
+fn reset(r: Response&) {
+    r.status = 0;
+    r.location.clear();
+    r.nonce.clear();
+    r.retry_after = 0;
+    r.body.clear();
 }

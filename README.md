@@ -4,8 +4,8 @@ ACME for [Goose](https://github.com/aardappel/goose): a server gets and renews i
 certificates from Let's Encrypt, or any ACME CA, through TLS-ALPN-01 on the port it
 already serves, so one binary can face the internet without Caddy or nginx. The package
 does no network I/O: the program's values carry each HTTPS request and serve each
-challenge certificate, and the module `acme.socket` carries them over
-[goose-http](https://github.com/kaitk/goose-http)'s blocking socket. Keys, signatures,
+challenge certificate, and the module `acme.socket` carries them with
+[goose-http](https://github.com/kaitk/goose-http)'s HTTP client. Keys, signatures,
 and certificates are [goose-tls](https://github.com/kaitk/goose-tls)'s; SHA-256 is
 [goose-hash](https://github.com/kaitk/goose-hash)'s.
 
@@ -25,7 +25,7 @@ How it works is in [architecture](docs/architecture.md), the choices behind it i
 | 🟢 | TLS-ALPN-01 (RFC 8737) | The challenge certificate from goose-tls, served by the program between `challenge_start` and `challenge_end`. Pebble validates it. |
 | 🟢 | Renewal | Two thirds into the certificate's validity, with the cached account. |
 | 🟢 | The cache | rustls-acme's file names and formats, read both ways; directory 0700 and files 0600; each file written whole or not at all. |
-| 🟢 | Over goose-http's blocking socket | `acme.socket`, for a lane. |
+| 🟢 | Over goose-http's HTTP client | `acme.socket`, for a lane. |
 | 🟡 | Let's Encrypt | Its staging service reached through `acme.socket`: directory, nonce, account, and an order it refused by policy (2026-10-22). A whole certificate needs a public server answering challenges (task 001). |
 | 🔴 | A goose-http server answering challenges | goose-http's `http.tls` doesn't choose a context per connection yet (task 001). |
 | 🔴 | HTTP-01, DNS-01, wildcards | Out of scope ([decisions](docs/decisions.md#scope)). |
@@ -89,8 +89,7 @@ All in namespace `acme`; each call's contract is in
 | `key_of(pem)`, `chain_of(pem)` | The key's PEM, and the chain's, for `tls::server` |
 | `validity(pem) -> not_before, not_after, ok` | The first certificate's dates |
 | `run() { ... } -> Error[]`, `fail(message)` | Errors: a failing call leaves the innermost `run` with an `Error` |
-| `socket(ms)`, `socket(ca, ms)`, `free(io)` | In `acme.socket`: an `io` over goose-http, trusting OpenSSL's store or `ca` |
-| `https(t, ctx, method, url, body, r)` | An `exchange` over any transport with four calls of its own |
+| `socket(ms)`, `socket(ca, ms)`, `free(io)` | In `acme.socket`: an `io` over goose-http's client, trusting OpenSSL's store or `ca` |
 
 ## Layout
 
@@ -98,10 +97,9 @@ All in namespace `acme`; each call's contract is in
 acme.goose      the package's entry: Settings, Response, run, and fail
 order.goose     the flow: certificate, cached, and the requests
 jws.goose       base64url, the JWK, and signed requests
-https.goose     URLs, HTTP/1.1 requests and responses, and https over a transport
 der.goose       PEM, and a certificate's dates
 cache.goose     rustls-acme's layout, and its modes
-socket.goose    the module acme.socket: an io over goose-http's blocking socket
+socket.goose    the module acme.socket: an io over goose-http's http.client
 shim/mode.c     chmod, until Goose's os module sets modes
 test/           the tests by area, the fake CA, and test/live/, which needs Pebble
 scripts/        the Goose pin, the test scripts, and the Pebble run
@@ -116,7 +114,7 @@ tasks/          task tracking (tasks/README.md)
 | Goose compiler | `aardappel/goose` release `v2026.3` (`8511ae3`), which the scripts fetch ([setup](docs/development.md#set-up-the-goose-compiler)) | An official release builds the same on every platform |
 | goose-tls | `github.com/kaitk/goose-tls@v0.0.5` | P-256 keys, ES256, the CSR, the challenge certificate, and client TLS |
 | goose-hash | `github.com/kaitk/goose-hash@v0.0.4` | SHA-256 |
-| goose-http | `github.com/kaitk/goose-http@v0.5.2`, in `socket.goose` and the programs that import it | Its blocking socket, for `acme.socket` |
+| goose-http | `github.com/kaitk/goose-http@5a780febed8e129d5bbf4c5278df117905e456ed`, in `socket.goose` and the programs that import it | Its HTTP client, `http.client`, for `acme.socket`, which no release has yet |
 | Pebble | `v2.8.0`, in `scripts/pebble.sh` | The live test's CA |
 
 ## Credits
