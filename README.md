@@ -123,3 +123,10 @@ The package implements RFC 8555 (ACME), RFC 8737 (TLS-ALPN-01), RFC 7515 and RFC
 (JWS and the JWK thumbprint) from their text. Its cache follows
 [rustls-acme](https://github.com/FlorianUekermann/rustls-acme) 0.15's `DirCache`. Its
 live test runs against Let's Encrypt's [Pebble](https://github.com/letsencrypt/pebble).
+
+## License
+
+Licensed under either of the [Apache License, Version 2.0](LICENSE-APACHE) or the
+[MIT license](LICENSE-MIT), at your option. Unless you state otherwise, any
+contribution you submit for inclusion, as defined in the Apache-2.0 license, is
+licensed the same way, without any additional terms or conditions.
