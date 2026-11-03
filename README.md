@@ -40,8 +40,8 @@ headers and libraries installed, as goose-tls asks
 ```goose
 import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.5";
-import http from "github.com/kaitk/goose-http@v0.5.4";
+import tls from "github.com/kaitk/goose-tls@v0.0.6";
+import http from "github.com/kaitk/goose-http@v0.5.17";
 import acme from "github.com/kaitk/goose-acme@v0.0.4";
 import acme.socket;
 
@@ -112,9 +112,9 @@ tasks/          task tracking (tasks/README.md)
 | What | Pin | Why |
 |---|---|---|
 | Goose compiler | `aardappel/goose` release `v2026.3` (`8511ae3`), which the scripts fetch ([setup](docs/development.md#set-up-the-goose-compiler)) | An official release builds the same on every platform |
-| goose-tls | `github.com/kaitk/goose-tls@v0.0.5` | P-256 keys, ES256, the CSR, the challenge certificate, and client TLS |
+| goose-tls | `github.com/kaitk/goose-tls@v0.0.6` | P-256 keys, ES256, the CSR, the challenge certificate, and client TLS |
 | goose-hash | `github.com/kaitk/goose-hash@v0.0.4` | SHA-256 |
-| goose-http | `github.com/kaitk/goose-http@v0.5.4`, in `socket.goose` and the programs that import it | Its HTTP client, `http.client`, for `acme.socket` |
+| goose-http | `github.com/kaitk/goose-http@v0.5.17`, in `socket.goose` and the programs that import it | Its HTTP client, `http.client`, for `acme.socket` |
 | Pebble | `v2.8.0`, in `scripts/pebble.sh` | The live test's CA |
 
 ## Credits

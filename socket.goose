@@ -5,7 +5,7 @@
 // file declares at the reference this file names:
 //
 //   import acme from "github.com/kaitk/goose-acme@<tag>";
-//   import http from "github.com/kaitk/goose-http@v0.5.4";
+//   import http from "github.com/kaitk/goose-http@v0.5.17";
 //   import acme.socket;
 //
 //   let failed = acme::run() {
@@ -20,8 +20,8 @@ namespace acme;
 
 import std;
 import os;
-import http from "github.com/kaitk/goose-http@v0.5.4";
-import tls from "github.com/kaitk/goose-tls@v0.0.5";
+import http from "github.com/kaitk/goose-http@v0.5.17";
+import tls from "github.com/kaitk/goose-tls@v0.0.6";
 import http.client;
 
 // The largest response accepted: a certificate chain is a few kilobytes.
