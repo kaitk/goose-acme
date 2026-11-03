@@ -60,6 +60,36 @@ one records the new decision here, saying which it replaces, and updates
 - **Fresh keys per order and per challenge (2026-10-22).** The certificate's key is new
   for each order and each challenge certificate's key new for each challenge, as
   rustls-acme does. The account key is made once and cached.
+- **External account binding (2026-11-03),** for CAs that require it, such as ZeroSSL
+  and Google's: `Settings.eab_kid` and `eab_key`, the key in base64url as the CA gives
+  it, add RFC 8555's `externalAccountBinding`, an HS256 JWS of the account's JWK, to
+  `newAccount`. Thruster takes the same two settings (`EAB_KID`, `EAB_HMAC_KEY`). Pebble
+  checks the binding in the live run.
+
+## Serving: acme.serve
+
+- **A lane, and a chooser per worker fed by mail (2026-11-03).** The module
+  `acme.serve` is the glue task 001 and Plod's task 049 left to the program. A lane
+  thread runs the flow for each certificate in the plan over `acme.socket`, and mails
+  every worker each context it makes: a certificate's, as it's issued or renewed, and a
+  challenge's while the CA checks it. Each worker's chooser has a mailbox of its own,
+  whose address it mails the lane as it starts, and takes the mail at the next
+  ClientHello, so no worker's loop changes, and new connections get a renewed
+  certificate while open ones keep theirs. A context crosses as a reference of the
+  worker's own (`tls::share`), which the chooser frees when another replaces it.
+  Rejected: files the chooser reads at each hello, as Plod's first run by hand did,
+  which costs a read per handshake.
+- **One certificate per line of the plan, chosen by SNI (2026-11-03).** autocert gets
+  one certificate a name, and a plan can ask for that or for one certificate for several
+  names. A name with no certificate yet, or a hello with no SNI or another name, keeps
+  the context every connection is accepted from: a placeholder that offers only
+  `acme-tls/1`, so a client asking for h2 or HTTP/1.1 is refused with
+  `no_application_protocol`, as autocert refuses a name it has none for. The lane orders
+  at once, rather than at a name's first hello as autocert does, so no visitor waits on
+  an order; it waits for the workers to join, or 5 seconds, so that each can answer a
+  challenge. A failed order is tried again after a minute, doubling to an hour.
+- **The chooser is fixed-size (2026-11-03),** since `http::TlsServerOf` holds it before
+  its resizable slots: up to 32 names, of up to 253 bytes.
 
 ## The cache
 
@@ -70,6 +100,17 @@ one records the new decision here, saying which it replaces, and updates
   account and certificates with no setting, and the directory URL in the name keeps
   staging and production apart. Rejected: a format of the package's own with an option
   to read rustls-acme's, which needs a second format and a flag for no gain.
+- **autocert's layout as well, with `Settings.autocert` (2026-11-03).** This replaces
+  "rustls-acme's layout is the cache's only format": rustls-acme's stays the default,
+  and `autocert` keeps the cache as Go's `autocert.DirCache` does, which Thruster, and so
+  every Rails app it fronts, writes: `acme_account+key` holding the account key as PEM,
+  and a file named after the domain holding the key's PEM and the chain. A server that
+  replaces one of those, such as the Goose port of Campfire, keeps the account and the
+  certificates, and a cache it writes moves back. autocert keeps one certificate a
+  domain, so the file is named after the first, and one account for the directory
+  whatever the CA. Keys are read as PKCS#8 or SEC 1, and written as PKCS#8, which
+  autocert reads. Rejected: converting autocert's files into rustls-acme's on the
+  program's side, which would leave a cache the old server can't read.
 - **Renewal two thirds into the validity (2026-10-22),** as rustls-acme renews: day 60
   of a 90-day certificate, and day 4 of Let's Encrypt's 6-day ones.
 - **The certificate's dates from a DER walk (2026-10-22).** `acme::validity` reads the

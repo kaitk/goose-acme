@@ -9,7 +9,8 @@
 //   };
 //
 // The flow is in order.goose, JWS in jws.goose, PEM and certificate dates in
-// der.goose, and the cache, which keeps rustls-acme's layout, in cache.goose.
+// der.goose, and the cache, which keeps rustls-acme's layout or autocert's, in
+// cache.goose.
 namespace acme;
 
 import std;
@@ -26,12 +27,19 @@ let LETS_ENCRYPT_STAGING = "https://acme-staging-v02.api.letsencrypt.org/directo
 // What certificate gets, and from where. contacts are URIs, such as
 // "mailto:ops@example.com", and may be empty. cache is a directory for the
 // account key and the certificate, which certificate makes private; "" keeps
-// nothing, and every call orders a certificate.
+// nothing, and every call orders a certificate. autocert keeps the cache in
+// the layout of Go's autocert.DirCache rather than rustls-acme's
+// (cache.goose). eab_kid and eab_key, both or neither, bind a new account to
+// one the CA knows (RFC 8555, section 7.3.4): the key identifier, and the
+// HMAC key in base64url, as the CA gives them.
 struct Settings {
     directory: const u8[:],
     contacts: const (const u8[:])[:],
     domains: const (const u8[:])[:],
     cache: const u8[:] = "",
+    autocert: bool = false,
+    eab_kid: const u8[:] = "",
+    eab_key: const u8[:] = "",
 }
 
 // Why certificate failed: the CA's problem document, or the package's own

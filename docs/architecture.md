@@ -13,7 +13,9 @@ Otherwise it orders one from `settings.directory` (RFC 8555, section 7):
 1. `GET` the directory, then `HEAD` its `newNonce` for the first nonce.
 2. Load the account key from the cache, or make a P-256 key and cache it. `POST`
    `newAccount` with it, which creates the account or finds the existing one; its URL
-   signs every later request.
+   signs every later request. With `settings.eab_kid` and `eab_key`, the payload binds
+   the account to the CA's (RFC 8555, section 7.3.4): a JWS of the account's JWK with
+   `HS256` under the key, which is base64url, as the CA gives it.
 3. `POST` `newOrder` with the domains.
 4. For each authorization that isn't valid yet: make a TLS-ALPN-01 challenge
    certificate (RFC 8737) for the key authorization's SHA-256, call
@@ -22,7 +24,8 @@ Otherwise it orders one from `settings.directory` (RFC 8555, section 7):
 5. Poll the order until it is `ready`, make the certificate's key and a CSR, `POST`
    `finalize`, and poll until the order is `valid`.
 6. `POST`-as-`GET` the certificate. The result is the key's PEM, a blank line, and the
-   chain, which the cache stores.
+   chain, which the cache stores; in autocert's layout, no blank line, and nothing
+   after the chain.
 
 Every request but the first two is a JWS signed with ES256 by goose-tls, with the
 account key as a JWK in `newAccount` and the account URL after.
@@ -80,6 +83,15 @@ rustls-acme's `DirCache`:
 | `cached_account_<h>`, `h` = base64url(SHA-256(each contact, `\0`, then the directory URL)) | The account key, PKCS#8 DER |
 | `cached_cert_<h>`, `h` = the same over the domains | The certificate's key as PKCS#8 PEM, a blank line, then the chain, leaf first |
 
+With `settings.autocert`, they follow Go's `autocert.DirCache`, as Thruster keeps it:
+
+| File | Holds |
+|---|---|
+| `acme_account+key` | The account key as PEM: PKCS#8 as the flow writes it, or SEC 1's `EC PRIVATE KEY` as autocert does |
+| the first domain, such as `example.com` | The certificate's key as PEM, either kind, then the chain, leaf first, and nothing after it |
+
+A domain that isn't a file name, one with a `/` or starting with `.`, fails.
+
 The flow makes the directory 0700 and each file 0600, and narrows a directory
 rustls-acme left with wider modes, touching only files named `cached_*`. It writes each
 file with `write_file_atomic`, which can leave a `.tmp` file after a crash.
@@ -115,3 +127,45 @@ loop {
 
 The renewal time is two thirds into the certificate's validity, so a failure leaves a
 third of it, 30 days of a 90-day certificate, for retries.
+
+## A goose-http server: acme.serve
+
+The module `acme.serve` is that loop for a goose-http server, on a lane of its own,
+with each worker's TLS choosing its context at the ClientHello
+([decisions](decisions.md#serving-acmeserve)):
+
+```goose
+thread_fn worker(cfg: http::Config, service: acme::Service) {
+    var server = acme::tls_server(service);
+    http::exit_on_error(http::serve_epoll(cfg, fresh, server) { ev, st, out => ... });
+    acme::release(server);
+}
+
+var plan = acme::Plan { workers: 4, .. };
+plan.directory.append(acme::LETS_ENCRYPT);
+plan.cache.append("/var/lib/app/acme");
+acme::plan_certificate(plan, ["example.com"]);
+acme::plan_certificate(plan, ["www.example.com"]);
+let service, err = acme::serve(plan);
+var cfg = http::Config { port: 443, tls: true, workers: 4, .. };
+http::run(cfg, service, worker);
+```
+
+| Call | Does |
+|---|---|
+| `Plan { directory, contacts, certificates, cache, autocert, eab_kid, eab_key, ca, protocols, workers }` | `Settings` as flat text, for the lane's thread: contacts one a line; `certificates` one a line, its names separated by spaces; `ca`, PEM, trusted for the directory in place of OpenSSL's store; `protocols`, ALPN names separated by commas, `h2,http/1.1` when empty; `workers`, how many to wait for |
+| `plan_certificate(p, names)` | Adds a line for one certificate for `names`, lowercased |
+| `serve(p) -> Service, error` | Makes the context every connection is accepted from, and starts the lane; `error` is empty, or why it can't |
+| `tls_server(service)` | In a worker, before its loop: an `http::TlsServerOf<acme::Chooser>` whose chooser joins the lane |
+| `release(server)` | Frees it once the loop has returned |
+| `stop(service)` | Stops the lane once the workers have returned |
+
+The lane serves each cached certificate that hasn't expired at once, then orders each
+one that is due, its renewal time past or none cached, and sleeps until the next. It
+logs each certificate it serves, and each failure, to stderr. For each order it mails
+every worker the challenge's context while the CA checks it, and then the
+certificate's; a worker that joins later gets every certificate held. A connection
+moves to the context for its SNI name, lowercased and without a final dot: a challenge
+while one lasts for a client that offers `acme-tls/1`, the certificate otherwise. One
+whose name has neither stays on the placeholder context, which offers only
+`acme-tls/1`, so a client that asks for h2 or HTTP/1.1 is refused.

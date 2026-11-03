@@ -34,6 +34,10 @@ struct Ca {
     // The account: its JWK, and how many accounts were made.
     jwk: u8[..256],
     accounts: i64 = 0,
+    // External account binding: when eab_kid is set, a new account must be
+    // bound to it with eab_key, the HMAC key's bytes.
+    eab_kid: u8[..64],
+    eab_key: u8[..64],
     // The order: its names, newline-separated; the names validated; the
     // names whose challenge failed; polls left before a challenge is valid.
     domains: u8[..512],
@@ -162,6 +166,11 @@ fn answer(c: Ca&, method: const u8[:], url: const u8[:], body: const u8[:], r: a
         let x, x_ok = json::as_string(json::member(jwk, "x"));
         let y, y_ok = json::as_string(json::member(jwk, "y"));
         guard x_ok && y_ok else { problem(c, r, 400, "malformed", "the jwk"); return; }
+        if c.eab_kid.len > 0 {
+            let why = binding(c, json::member(pl, "externalAccountBinding"), url, x, y);
+            print("  binding: ", if why.len == 0 { "ok" } else { why });
+            guard why.len == 0 else { problem(c, r, 400, "externalAccountRequired", why); return; }
+        }
         var key: u8[>..] = [];
         format(key, x, ".", y);
         r.location.append(str(BASE, "/acct/1"));
@@ -251,6 +260,38 @@ fn answer(c: Ca&, method: const u8[:], url: const u8[:], body: const u8[:], r: a
         return;
     }
     problem(c, r, 404, "malformed", "no such resource");
+}
+
+// What's wrong with newAccount's externalAccountBinding, eab, for the account
+// key x and y, or "" when nothing is: RFC 8555, section 7.3.4.
+fn binding(c: Ca&, eab: json::Node?, url: const u8[:], x: const u8[:], y: const u8[:]) -> u8[>..] {
+    guard eab else { return str("no externalAccountBinding"); }
+    let p64, p_ok = json::as_string(json::member(eab, "protected"));
+    let b64, b_ok = json::as_string(json::member(eab, "payload"));
+    let s64, s_ok = json::as_string(json::member(eab, "signature"));
+    let header, h_ok = unbase64url(p64);
+    let payload, y_ok = unbase64url(b64);
+    let signature, g_ok = unbase64url(s64);
+    guard p_ok && b_ok && s_ok && h_ok && y_ok && g_ok else { return str("not a flattened JWS"); }
+    var hdoc: json::Node[>..] = [];
+    var hdecoded: u8[>..] = [];
+    let h, herr = json::parse(header, hdoc, hdecoded);
+    let alg, a_ok = json::as_string(json::member(h, "alg"));
+    let kid, k_ok = json::as_string(json::member(h, "kid"));
+    let hurl, u_ok = json::as_string(json::member(h, "url"));
+    guard a_ok && alg == "HS256" && k_ok && kid == c.eab_kid && u_ok && hurl == url && !json::member(h, "nonce") else {
+        return str("the binding's header");
+    }
+    var pdoc: json::Node[>..] = [];
+    var pdecoded: u8[>..] = [];
+    let jwk, perr = json::parse(payload, pdoc, pdecoded);
+    let jx, jx_ok = json::as_string(json::member(jwk, "x"));
+    let jy, jy_ok = json::as_string(json::member(jwk, "y"));
+    guard jx_ok && jy_ok && jx == x && jy == y else { return str("the binding's key isn't the account's"); }
+    var input: u8[>..] = [];
+    format(input, p64, ".", b64);
+    guard signature == hash::hmac_sha256(c.eab_key, input) else { return str("the binding's MAC"); }
+    return [];
 }
 
 fn order_body(c: Ca&) -> u8[>..] {

@@ -19,6 +19,47 @@ fn base64url(out: u8[>..]&, data: const u8[:]) {
     }
 }
 
+// The bytes base64url text encodes, padded or not; false when it isn't
+// base64url.
+fn unbase64url(text: const u8[:]) -> u8[>..], bool {
+    var b64: u8[>..] = [];
+    for c in text {
+        if c == '-' { b64.push('+'); } else if c == '_' { b64.push('/'); } else if c == '+' || c == '/' { return [], false; } else { b64.push(c); }
+    }
+    while b64.len % 4 != 0 { b64.push('='); }
+    var out: u8[>..] = [];
+    let ok = base64::decode(out, b64);
+    return out, ok;
+}
+
+// The externalAccountBinding member of newAccount's payload (RFC 8555,
+// section 7.3.4): a JWS of the account's JWK, for url, with the CA's key
+// identifier kid, MACed with HS256 under hmac_key.
+fn external_account_binding(hmac_key: const u8[:], kid: const u8[:], url: const u8[:], jwk: const u8[:]) -> u8[>..] {
+    var protected: u8[>..] = [];
+    protected.append("{\"alg\":\"HS256\",");
+    json::format_key(protected, "kid");
+    json::format_string(protected, kid);
+    protected.push(',');
+    json::format_key(protected, "url");
+    json::format_string(protected, url);
+    protected.push('}');
+    var input: u8[>..] = [];
+    base64url(input, protected);
+    input.push('.');
+    base64url(input, jwk);
+    let dot = find(input, ".");
+    var out: u8[>..] = [];
+    out.append("{\"protected\":\"");
+    out.append(input[..dot]);
+    out.append("\",\"payload\":\"");
+    out.append(input[dot + 1..]);
+    out.append("\",\"signature\":\"");
+    base64url(out, hash::hmac_sha256(hmac_key, input));
+    out.append("\"}");
+    return out;
+}
+
 // The account key's public JWK (RFC 7518, section 6.2.1), with its members in
 // the order and spacing RFC 7638's thumbprint hashes.
 fn jwk(xy: const u8[:]) -> u8[>..] {

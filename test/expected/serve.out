@@ -1,0 +1,11 @@
+serve: 
+Pebble's root: ok
+acme.test's certificate, its challenge answered by the server: ok
+www.acme.test's, a certificate of its own: ok
+ALPN offering h2: h2
+ALPN offering http/1.1: http/1.1
+a name not in the plan, refused: ok
+a request over it: ok
+the cache, in autocert's layout: ok
+the served certificate is the cached one: ok
+renewed while serving, without a restart: ok

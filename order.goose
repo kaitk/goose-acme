@@ -48,8 +48,8 @@ fn cached(s) -> u8[>..], i64 {
     var pem: u8[>..] = [];
     guard s.cache.len > 0 else { return pem, 0; }
     cache_open(s.cache);
-    let path = cache_path(s.cache, "cert", s.domains, s.directory);
-    guard cache_load(path, pem) else { return pem, 0; }
+    let path = cert_path(s);
+    guard path.len > 0 && cache_load(path, pem) else { return pem, 0; }
     let from, to, ok = validity(chain_of(pem));
     guard ok && key_of(pem).len > 0 else { pem.clear(); return pem, 0; }
     return pem, renew_time(from, to);
@@ -69,7 +69,7 @@ fn certificate<I, C>(io: I&, challenges: C&, s: Settings) -> u8[>..], i64 {
     let pem = order(io, challenges, s);
     let from, to, ok = validity(chain_of(pem));
     guard ok else { fail("the CA's certificate has no validity that can be read"); }
-    if s.cache.len > 0 { cache_store(s.cache, cache_path(s.cache, "cert", s.domains, s.directory), pem); }
+    if s.cache.len > 0 { cache_store(s.cache, cert_path(s), pem); }
     return copy(pem), renew_time(from, to);
 }
 
@@ -147,29 +147,33 @@ fn order<I, C>(io: I&, challenges: C&, s: Settings) -> u8[>..] {
     expect(r, 200, 200, "the certificate");
     tls::free(ses.key);
 
-    var pem: u8[>..] = [];
-    pem.append(key_pem);
-    pem.push('\n');
-    pem.append(r.body);
-    return pem;
+    return cert_file(s, key_pem, r.body);
 }
 
 // Loads the account key from the cache, or makes one and caches it, then
 // finds or creates the account, whose URL signs every request after.
 fn account<I>(io: I&, ses: Session&, s: Settings, r: Response&) {
-    var der: u8[>..] = [];
-    var path: u8[>..] = [];
-    if s.cache.len > 0 { path.append(cache_path(s.cache, "account", s.contacts, s.directory)); }
-    let have = path.len > 0 && cache_load(path, der);
+    // The file holds DER in rustls-acme's layout, PEM in autocert's.
+    var stored: u8[>..] = [];
+    let path = account_path(s);
+    let have = path.len > 0 && cache_load(path, stored);
     var xy: u8[>..] = [];
     var made: u8[>..] = [];
     let failed = tls::run() {
-        ses.key = if have { tls::key_from_pem(pem(der, PRIVATE_KEY)) } else { tls::key_generate(tls::P256) };
+        if have && s.autocert {
+            ses.key = tls::key_from_pem(stored);
+        } else if have {
+            ses.key = tls::key_from_pem(pem(stored, PRIVATE_KEY));
+        } else {
+            ses.key = tls::key_generate(tls::P256);
+        }
         xy.append(tls::public_xy(ses.key));
         if !have { made.append(tls::key_pem(ses.key)); }
     };
     for e in failed { fail(str("the account key: ", e.message)); }
-    if !have && path.len > 0 {
+    if !have && path.len > 0 && s.autocert {
+        cache_store(s.cache, path, made);
+    } else if !have && path.len > 0 {
         let pkcs8, end, ok = pem_block(made, 0, PRIVATE_KEY);
         guard ok else { fail("the account key's PEM can't be read"); }
         cache_store(s.cache, path, pkcs8);
@@ -183,7 +187,15 @@ fn account<I>(io: I&, ses: Session&, s: Settings, r: Response&) {
         if i > 0 { payload.push(','); }
         json::format_string(payload, c);
     }
-    payload.append("]}");
+    payload.push(']');
+    if s.eab_kid.len > 0 || s.eab_key.len > 0 {
+        guard s.eab_kid.len > 0 && s.eab_key.len > 0 else { fail("eab_kid and eab_key go together"); }
+        let hmac_key, ok = unbase64url(s.eab_key);
+        guard ok && hmac_key.len > 0 else { fail("eab_key isn't base64url"); }
+        payload.append(",\"externalAccountBinding\":");
+        payload.append(external_account_binding(hmac_key, s.eab_kid, ses.new_account, ses.jwk));
+    }
+    payload.push('}');
     post(io, ses, ses.new_account, payload, r);
     expect(r, 200, 201, "newAccount");
     guard r.location.len > 0 else { fail("newAccount gave no account URL"); }

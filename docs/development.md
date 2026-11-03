@@ -39,8 +39,8 @@ every `.goose` file under its root, and the release's `stdlib/` is there.
 `scripts/test.sh` runs every test that needs no CA, and stops at the first step that
 fails:
 
-1. `goose check` of `acme.goose`, and of `test/live/pebble.goose`, which checks
-   `socket.goose` with goose-http.
+1. `goose check` of `acme.goose`, and of the programs in `test/live/`, which check
+   `socket.goose` and `serve.goose` with goose-http.
 2. `test/run_tests.py`: the tests under `test/<area>/`, each built with `goose build`
    at `-O0` and `-O2` and run, its output checked against `test/expected/<name>.out`.
 
@@ -60,8 +60,13 @@ The areas:
 - `test/flow/`: the whole flow against a CA the program fakes (`test/fake.goose`):
   issuance for two names, the cache, renewal with the cached account (`order`); refused
   nonces, an invalid challenge, a refused order, an unreachable CA, and a cached file
-  that can't be read (`failures`); and a cache rustls-acme wrote, its account key made
-  by ring (`rustls`, below).
+  that can't be read (`failures`); a cache rustls-acme wrote, its account key made
+  by ring (`rustls`, below); and a cache Go's autocert wrote, renewed and rewritten in
+  its layout, and an account bound with EAB, and the binding's failures (`autocert`,
+  below).
+- `test/serve/`: `acme.serve`'s chooser in one thread, fed the lane's mail: a name's
+  certificate with h2, a renewal while an open connection keeps the old one, a
+  challenge while it lasts, and refusals.
 - `test/socket/`: a program that imports `acme.socket` and calls nothing that can fail,
   which must build ([findings](goose-findings.md)).
 - `test/compile/`: `// error:` fixtures, programs that must not compile:
@@ -78,15 +83,25 @@ certificate for it from `openssl req -x509`, valid until 2049: the layout rustls
 writes. On 2026-10-22, ring 0.17.14's `EcdsaKeyPair::from_pkcs8` also read both keys
 the Pebble run cached, so a cache can move back to rustls-acme.
 
+### autocert's files
+
+`test/data/autocert/` holds `acme_account+key` and `example.test` as Go's
+`golang.org/x/crypto/acme/autocert` v0.58.0 writes them, through its `DirCache`: each
+key as SEC 1's `EC PRIVATE KEY`, and for `example.test` a self-signed certificate from
+`x509.CreateCertificate`, valid until 2049. On 2026-11-03, an `autocert.Manager` over
+the cache that `test/live/serve.goose` left, with no CA it could reach, served the
+renewed `acme.test` from it, and Go's `x509.ParsePKCS8PrivateKey` read the account key,
+so a cache can move back to Thruster or another autocert server.
+
 ## Pebble
 
-`scripts/pebble.sh` runs `test/live/pebble.goose` against
+`scripts/pebble.sh` runs the programs in `test/live/` against
 [Pebble](https://github.com/letsencrypt/pebble), Let's Encrypt's test CA, on this
-machine, and checks its output against `test/expected/pebble.out`:
+machine, and checks each one's output against `test/expected/<name>.out`:
 
 ```sh
 scripts/pebble.sh
-scripts/pebble.sh --record    # write test/expected/pebble.out
+scripts/pebble.sh --record    # write test/expected/pebble.out and serve.out
 ```
 
 The first run builds Pebble and `pebble-challtestsrv` at the version the script names
@@ -102,12 +117,23 @@ script starts:
   `PEBBLE_VA_NOSLEEP=1` and `PEBBLE_WFE_NONCEREJECT=0`, so the run neither waits nor
   meets a random `badNonce`.
 
-The program gets a certificate for `acme.test` and `www.acme.test`, gets it again from
-the cache, waits for its renewal time, about 20 seconds, and renews it with the cached
-account. Logs and the cache are in `build/pebble/run/`. The ports must be free.
+`test/live/pebble.goose` gets a certificate for `acme.test` and `www.acme.test`, gets
+it again from the cache, waits for its renewal time, about 20 seconds, and renews it
+with the cached account.
+
+Then the script stops `scripts/challenge.py`, and starts Pebble again requiring
+external account binding with the key it names. `test/live/serve.goose` serves HTTPS
+on `127.0.0.1:5001` with `acme.serve`, two workers answering the challenges
+themselves, for a certificate each for `acme.test` and `www.acme.test`, its account
+bound with EAB and its cache in autocert's layout. A client checks each name's
+certificate, h2 and HTTP/1.1 by ALPN, a refused name, and a request; then the program
+waits, up to 40 seconds, for a new connection to get the renewed certificate.
+
+Logs and the caches are in `build/pebble/run/`. The ports must be free.
 
 ## Move the pin
 
 Move a pin in its own commit, with `scripts/test.sh` and `scripts/pebble.sh` passing:
 the Goose release in `scripts/goose.sh`, goose-tls and goose-hash in every file that
-imports them, and goose-http in `socket.goose`, `test/live/pebble.goose`, and the docs.
+imports them, and goose-http in `socket.goose`, `serve.goose`, the programs that import
+either, and the docs.

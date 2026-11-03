@@ -1,0 +1,71 @@
+autocert's cache:
+autocert's certificate, from the cache: ok
+its key, SEC 1's: ok
+then the chain: ok
+a server context from it, the key matching: ok
+when due:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a new certificate, in the domain's file: ok
+the key, then the chain with nothing after it: ok
+the chain as the CA gave it: ok
+the account key kept: ok
+errors: 0
+errors: 0
+the order signed with autocert's account key: ok
+accounts: 1
+an empty cache:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  POST /order
+  POST /authz/example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+files: acme_account+key, example.test
+the account key as PKCS#8 PEM: ok
+the certificate, from the cache: ok
+errors: 0
+a domain that isn't a file name:
+error: not a file name for autocert's cache: ../example.test
+errors: 1
+EAB:
+  GET /dir
+  HEAD /nonce
+  POST /account
+  binding: ok
+  POST /order
+  POST /authz/example.test
+  POST /order/1
+  POST /finalize/1
+  POST /order/1
+  POST /cert/1
+a certificate for the bound account: ok
+errors: 0
+  GET /dir
+  HEAD /nonce
+  POST /account
+  binding: no externalAccountBinding
+error: newAccount: HTTP 400: urn:ietf:params:acme:error:externalAccountRequired no externalAccountBinding
+errors: 1
+  GET /dir
+  HEAD /nonce
+  POST /account
+  binding: the binding's MAC
+error: newAccount: HTTP 400: urn:ietf:params:acme:error:externalAccountRequired the binding's MAC
+errors: 1
+  GET /dir
+error: eab_kid and eab_key go together
+errors: 1
+  GET /dir
+error: eab_key isn't base64url
+errors: 1

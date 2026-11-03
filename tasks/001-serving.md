@@ -1,6 +1,6 @@
 # 001: A server on the internet
 
-Status: in-progress (2026-10-22). Waits on a program's glue and a public server.
+Status: in-progress (2026-10-22). Waits on a public server.
 
 The package gets certificates from Pebble through `acme.socket`, but two things in
 goose-http stood between it and a goose-rest server facing Let's Encrypt (goose-rest's
@@ -20,17 +20,21 @@ task 049). Both are done:
   through it, up to an order for `example.com`, which it refused by policy
   (2026-10-22).
 
-What remains is in the program, not in goose-http: a chooser per worker, fed by mail
-from the lane that runs `acme::certificate` with each challenge's certificate and each
-renewed certificate; then the run against Let's Encrypt's staging service from a public
-server.
+The program's glue is the module `acme.serve` (2026-11-03): a chooser per worker, fed
+by mail from the lane that runs `acme::certificate`, with each challenge's context and
+each certificate's. It needed goose-http `v0.5.17`, which gives `tls_hello` the
+worker's chooser rather than a copy, so what it takes from mail lasts.
+`test/live/serve.goose` gets two certificates from Pebble through it and renews them
+while it serves. What remains is the run against Let's Encrypt's staging service from a
+public server.
 
 ## Acceptance criteria
 
 - [x] goose-http's `http.tls` chooses a context per connection, from a program's hook
       (goose-http `v0.5.3`)
-- [ ] goose-rest's test server gets a certificate from Pebble and renews it while it
-      serves, without a restart (goose-rest's task 049)
+- [x] A goose-http server gets a certificate from Pebble and renews it while it serves,
+      without a restart (`acme.serve`, `test/live/serve.goose`, 2026-11-03; Plod's
+      task 049 asked it of a goose-rest server)
 - [x] `acme.socket` reaches a directory by name (Let's Encrypt's staging service,
       2026-10-22)
 - [ ] A certificate from Let's Encrypt's staging service, for a public name, once a

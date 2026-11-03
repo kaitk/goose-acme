@@ -7,6 +7,7 @@ import std;
 import base64;
 
 let PRIVATE_KEY = "PRIVATE KEY";
+let EC_PRIVATE_KEY = "EC PRIVATE KEY";
 let CERTIFICATE = "CERTIFICATE";
 
 // The first PEM block in text from at with label: the bytes it encodes, and
@@ -50,15 +51,20 @@ fn pem(der: const u8[:], label: const u8[:]) -> u8[>..] {
 }
 
 // A certificate file as the cache keeps it: the private key's PEM block first,
-// then the chain, leaf first.
-fn key_of(pem: const u8[:]) -> const u8[:] {
+// PKCS#8 or, as autocert writes it, SEC 1's, then the chain, leaf first.
+fn key_of(pem: const u8[:]) -> const u8[:] { pem[..key_end(pem)] }
+
+// Where the key's block ends in pem, or 0 when there is none.
+fn key_end(pem: const u8[:]) -> i64 {
     let der, end, ok = pem_block(pem, 0, PRIVATE_KEY);
-    return if ok { pem[..end] } else { pem[..0] };
+    if ok { return end; }
+    let sec1, sec1_end, sec1_ok = pem_block(pem, 0, EC_PRIVATE_KEY);
+    return if sec1_ok { sec1_end } else { 0 };
 }
 
 fn chain_of(pem: const u8[:]) -> const u8[:] {
-    let der, end, ok = pem_block(pem, 0, PRIVATE_KEY);
-    guard ok else { return pem[..0]; }
+    let end = key_end(pem);
+    guard end > 0 else { return pem[..0]; }
     var at = end;
     while at < pem.len && (pem[at] == '\n' || pem[at] == '\r') { at++; }
     return pem[at..];

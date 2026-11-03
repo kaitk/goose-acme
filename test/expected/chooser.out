@@ -1,0 +1,29 @@
+errors: 0
+the base context, choosing: ok
+the chooser's box: ok
+before any certificate:
+a.test offering h2: refused
+errors: 0
+a certificate's context: ok
+its certificate:
+a.test offering h2: connected, ALPN h2
+the client got it: ok
+A.Test offering http/1.1: connected, ALPN http/1.1
+by any case: ok
+b.test offering h2: refused
+renewed:
+errors: 0
+a.test offering h2: connected, ALPN h2
+a new connection gets the new one: ok
+the open one goes on with the old: ok
+  and its data flows: ok
+a challenge:
+errors: 0
+errors: 0
+a.test offering acme-tls/1: refused
+the validation gets the challenge's context: ok
+a.test offering h2: connected, ALPN h2
+others still get the certificate: ok
+a.test offering acme-tls/1: connected, ALPN acme-tls/1
+after the challenge, the base context's placeholder: ok
+choices: 1

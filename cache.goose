@@ -7,6 +7,14 @@
 //   cached_cert_<b64url(sha256(domain "\0" ... directory_url))>
 //       the certificate's key as PKCS#8 PEM, a blank line, then the chain
 //
+// With Settings.autocert, the layout of Go's autocert.DirCache instead, as
+// Thruster and other Go servers keep it:
+//
+//   acme_account+key
+//       the account key, PEM: PKCS#8 as written, or SEC 1's EC PRIVATE KEY
+//   <the first domain>
+//       the certificate's key as PEM, then the chain, and nothing after it
+//
 // The directory is made 0700 and each file 0600, since they hold private
 // keys (shim/mode.c); a file is written whole or not at all.
 //
@@ -36,6 +44,40 @@ fn cache_path(dir: const u8[:], kind: const u8[:], items: const u8[:][:], direct
     format(path, "cached_", kind, "_");
     base64url(path, hash::sha256_finish(s));
     return path;
+}
+
+// The account key's file for s, or "" without a cache.
+fn account_path(s: Settings) -> u8[>..] {
+    guard s.cache.len > 0 else { return []; }
+    if s.autocert { return in_dir(s.cache, AUTOCERT_ACCOUNT); }
+    return cache_path(s.cache, "account", s.contacts, s.directory);
+}
+
+// The certificate's file for s, or "" without a cache. autocert names it
+// after the domain, so a name that isn't one fails.
+fn cert_path(s) -> u8[>..] {
+    guard s.cache.len > 0 && s.domains.len > 0 else { return []; }
+    guard s.autocert else { return cache_path(s.cache, "cert", s.domains, s.directory); }
+    let name = s.domains[0];
+    guard name.len > 0 && name[0] != '.' && find(name, "/") < 0 && find(name, "\\") < 0 else {
+        fail(str("not a file name for autocert's cache: ", name));
+    }
+    return in_dir(s.cache, name);
+}
+
+let AUTOCERT_ACCOUNT = "acme_account+key";
+
+fn in_dir(dir: const u8[:], name: const u8[:]) -> u8[>..] {
+    return str(dir, if dir[dir.len - 1] == '/' { "" } else { "/" }, name);
+}
+
+// The certificate file for key_pem and the CA's chain, as s's layout keeps
+// it. autocert's reader takes nothing after the chain's last block.
+fn cert_file(s: Settings, key_pem: const u8[:], chain: const u8[:]) -> u8[>..] {
+    guard s.autocert else { return str(key_pem, "\n", chain); }
+    var end = chain.len;
+    while end > 0 && (chain[end - 1] == '\n' || chain[end - 1] == '\r' || chain[end - 1] == ' ') { end--; }
+    return str(key_pem, chain[..end], "\n");
 }
 
 // Appends the file at path to out: true when it was there and read.
