@@ -118,7 +118,7 @@ tasks/          task tracking (tasks/README.md)
 
 | What | Pin | Why |
 |---|---|---|
-| Goose compiler | `aardappel/goose` release `v2026.3` (`8511ae3`), which the scripts fetch ([setup](docs/development.md#set-up-the-goose-compiler)) | An official release builds the same on every platform |
+| Goose compiler | `aardappel/goose` release `v2026.4` (`6c1fbc7`), which the scripts fetch ([setup](docs/development.md#set-up-the-goose-compiler)) | An official release builds the same on every platform |
 | goose-tls | `github.com/kaitk/goose-tls@v0.0.6` | P-256 keys, ES256, the CSR, the challenge certificate, and client TLS |
 | goose-hash | `github.com/kaitk/goose-hash@v0.0.4` | SHA-256 |
 | goose-http | `github.com/kaitk/goose-http@v0.5.17`, in `socket.goose`, `serve.goose`, and the programs that import them | Its HTTP client, `http.client`, for `acme.socket`; its TLS server and mail, for `acme.serve` |
