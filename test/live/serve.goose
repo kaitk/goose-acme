@@ -14,7 +14,7 @@ import http.tls;
 import http.client;
 import acme from "../../";
 import acme.serve;
-import check from "../";
+import check from "../check/";
 
 let PORT = 5001;
 

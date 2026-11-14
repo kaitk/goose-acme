@@ -18,8 +18,8 @@ entry is deleted once the pin has its fix (`agents/goose.md`).
   without calling `acme::certificate`. Work-around: each function that can call
   `acme::fail` has a generic parameter, so it is compiled only where it's called, and
   `test/socket/imports.goose` builds a program that calls none of them;
-  `scripts/test.sh` doesn't check `test/fake.goose` alone, whose overloads are typed. A
-  program's own typed `exchange` that calls `acme::fail` needs the same.
+  `scripts/test.sh` doesn't check `test/fake/fake.goose` alone, whose overloads are
+  typed. A program's own typed `exchange` that calls `acme::fail` needs the same.
 
 ## Feature requests
 

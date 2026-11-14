@@ -7,7 +7,8 @@ build` at -O0 and at -O2, as Goose's runner builds a fixture with C of its own,
 and runs each as a process of its own, all in parallel. The first build fetches
 goose-tls and goose-hash and compiles their C, which `goose build` keeps under
 GOOSE_HOME for the rest. The programs under test/live/, which need Pebble, run
-only under scripts/pebble.sh. A run passes when
+only under scripts/pebble.sh; test/check/ and test/fake/ are the helper
+packages the tests import. A run passes when
 its stdout is test/expected/<name>.out, every nonblank line of
 test/expected/<name>.stderr, if there is one, occurs in its stderr, and it
 exits 0, or not 0 where test/expected/<name>.aborts exists.
@@ -203,7 +204,8 @@ class Tests:
 
 def find_tests(names):
     """test/<area>/*.goose, or those of them whose area or name is in `names`."""
-    tests = sorted(p for p in HERE.glob("*/*.goose") if p.parent not in (EXPECTED, HERE / "live"))
+    skip = (EXPECTED, HERE / "live", HERE / "check", HERE / "fake")
+    tests = sorted(p for p in HERE.glob("*/*.goose") if p.parent not in skip)
     stems = {}
     for t in tests:
         if t.stem in stems:

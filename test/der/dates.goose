@@ -6,7 +6,7 @@ import std;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.6";
 import acme from "../../";
-import check from "../";
+import check from "../check/";
 
 fn dates(label: const u8[:], pem: const u8[:], from: i64, to: i64) {
     let f, t, ok = acme::validity(pem);

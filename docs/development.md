@@ -57,7 +57,7 @@ The areas:
 - `test/der/`: certificate dates in UTCTime and GeneralizedTime, from certificates
   made with `openssl req -x509` (`test/data/utc.pem` and `generalized.pem`), and PEM.
 - `test/cache/`: the cache's file names against rustls-acme's, and its modes.
-- `test/flow/`: the whole flow against a CA the program fakes (`test/fake.goose`):
+- `test/flow/`: the whole flow against a CA the program fakes (`test/fake/fake.goose`):
   issuance for two names, the cache, renewal with the cached account (`order`); refused
   nonces, an invalid challenge, a refused order, an unreachable CA, and a cached file
   that can't be read (`failures`); a cache rustls-acme wrote, its account key made

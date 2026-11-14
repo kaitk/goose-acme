@@ -10,7 +10,7 @@ import tls from "github.com/kaitk/goose-tls@v0.0.6";
 import http from "github.com/kaitk/goose-http@v0.5.17";
 import acme from "../../";
 import acme.socket;
-import check from "../";
+import check from "../check/";
 
 // The challenges: each a certificate and key in dir, named after the
 // identifier, for scripts/challenge.py to serve.

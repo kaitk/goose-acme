@@ -11,8 +11,8 @@ import os;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.6";
 import acme from "../../";
-import check from "../";
-import fake from "../";
+import check from "../check/";
+import fake from "../fake/";
 
 let ACCOUNT = embed_file("../data/autocert/acme_account+key");
 let CERT = embed_file("../data/autocert/example.test");

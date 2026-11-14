@@ -7,7 +7,7 @@ import json;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.6";
 import acme from "../../";
-import check from "../";
+import check from "../check/";
 
 fn b64url(data: const u8[:]) -> u8[>..] {
     var out: u8[>..] = [];

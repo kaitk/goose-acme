@@ -6,8 +6,8 @@ import os;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 import tls from "github.com/kaitk/goose-tls@v0.0.6";
 import acme from "../../";
-import check from "../";
-import fake from "../";
+import check from "../check/";
+import fake from "../fake/";
 
 fn attempt(label: const u8[:], ca: fake::Ca&, site: fake::Site&, s: acme::Settings) {
     print(label, ":");

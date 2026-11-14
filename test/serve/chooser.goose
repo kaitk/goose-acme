@@ -10,7 +10,7 @@ import http from "github.com/kaitk/goose-http@v0.5.17";
 import http.tls;
 import acme from "../../";
 import acme.serve;
-import check from "../";
+import check from "../check/";
 
 fn pass(from: tls::Conn, to: tls::Conn) {
     var buf: u8[4096] = [0; 4096];
