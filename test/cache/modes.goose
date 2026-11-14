@@ -9,7 +9,7 @@ import tls from "github.com/kaitk/goose-tls@v0.0.6";
 import acme from "../../";
 import check from "../check/";
 
-extern "ga_mode" fn mode_c(path: const u8[:]) -> i64;
+extern fn mode_c(path: const u8[:]) -> i64 = "ga_mode";
 
 // 0700 and 0600: Goose has no octal literals.
 let PRIVATE_DIR = 7 * 64;

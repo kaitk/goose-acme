@@ -26,7 +26,7 @@ import std;
 import os;
 import hash from "github.com/kaitk/goose-hash@v0.0.4";
 
-extern "ga_private" fn private_c(path: const u8[:], directory: bool) -> bool;
+extern fn private_c(path: const u8[:], directory: bool) -> bool = "ga_private";
 
 // The path of the file for kind, "account" or "cert", and items, the contacts
 // or the domains, from directory_url, in dir.
